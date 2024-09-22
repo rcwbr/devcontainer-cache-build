@@ -2,9 +2,9 @@
   "name": "devcontainer-cache-build",
   "initializeCommand": ".devcontainer/initialize",
   "image": "devcontainer-cache-build-devcontainer",
-  // "features": {
-  //   "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
-  // },
+  "mounts": [
+    { "source": "/var/run/docker.sock", "target": "/var/run/docker.sock", "type": "bind" }
+  ],
   "secrets": {
     "DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE": {
       "description": "GitHub personal access token with `write:packages` scope to pull and push devcontainer image cache",
