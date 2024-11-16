@@ -1,0 +1,202 @@
+#!/bin/bash
+
+set -e
+
+
+###### Handle repeated call to devcontainer up ######
+
+if [[ -z ${DEVCONTAINER_INITIALIZE_PID+x} ]]; then
+  echo "DEVCONTAINER_INITIALIZE_PID undefined; will not check for --expect-existing-container, instead will assume that a build is required."
+else
+  set +e
+  # Get the PID of the process that called initialize
+  INITIALIZE_CALLER_PID="$(ps -o ppid= ${DEVCONTAINER_INITIALIZE_PID})"
+  # Strip whitespace from the PID value
+  INITIALIZE_CALLER_PID=${INITIALIZE_CALLER_PID// /}
+  cat /proc/${INITIALIZE_CALLER_PID}/cmdline | grep -q "expect-existing-container"
+  EXPECT_EXISTING_CONTAINER=$?
+  set -e
+  if [[ $EXPECT_EXISTING_CONTAINER == 0 ]]; then
+    echo "devcontainer up command includes --expect-existing-container, indicating that it is a repeat call after the intial build. Exiting, as no build is required in this case."
+    exit 0
+  fi
+fi
+
+
+###### Inputs with simple defaults ######
+
+DEVCONTAINER_CONTEXT="${DEVCONTAINER_CONTEXT:=.}"
+DEVCONTAINER_DEFINITION_TYPE="${DEVCONTAINER_DEFINITION_TYPE:=build}"
+DEVCONTAINER_PUSH_IMAGE="${DEVCONTAINER_PUSH_IMAGE:=false}"
+DEVCONTAINER_DEFAULT_BRANCH_NAME="${DEVCONTAINER_DEFAULT_BRANCH_NAME:=main}"
+
+# Replace any non-alphanumeric (or underscore) characters in the branch names with dashes
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+GIT_BRANCH_SANITIZED="${GIT_BRANCH//[^a-zA-Z0-9_]/-}"
+DEVCONTAINER_DEFAULT_BRANCH_NAME_SANITIZED="${DEVCONTAINER_DEFAULT_BRANCH_NAME//[^a-zA-Z0-9_]/-}"
+
+
+###### Inputs with computed defaults ######
+
+DEVCONTAINER_DEFINITION_FILES="${DEVCONTAINER_DEFINITION_FILES:=.devcontainer/Dockerfile}"
+
+
+# Compute outputs
+DEFAULT_DEVCONTAINER_OUTPUTS=" \
+  type=docker,name=${DEVCONTAINER_IMAGE}
+"
+
+if [[ "${DEVCONTAINER_REGISTRY}" != "" ]]; then
+  DEVCONTAINER_IMAGE_REF="${DEVCONTAINER_REGISTRY}/${DEVCONTAINER_IMAGE}"
+else
+  DEVCONTAINER_IMAGE_REF="$DEVCONTAINER_IMAGE"
+fi
+
+# If the build will push, add an image type output arg
+if [[ "$DEVCONTAINER_PUSH_IMAGE" == true ]]; then
+  DEFAULT_DEVCONTAINER_OUTPUTS=" \
+    $DEFAULT_DEVCONTAINER_OUTPUTS \
+    type=image,name=${DEVCONTAINER_IMAGE_REF}:${GIT_BRANCH_SANITIZED},push=${DEVCONTAINER_PUSH_IMAGE} \
+  "
+fi
+DEVCONTAINER_OUTPUTS=${DEVCONTAINER_OUTPUTS:=${DEFAULT_DEVCONTAINER_OUTPUTS}}
+
+# By default, pull cache:
+# - From the ref populated by CI for this branch
+# - From the ref populated by local runs for this branch
+# - From the ref populated by CI for the main branch
+DEFAULT_DEVCONTAINER_CACHE_FROMS=" \
+  type=registry,ref=${DEVCONTAINER_IMAGE_REF}-cache:${GIT_BRANCH_SANITIZED} \
+  type=registry,ref=${DEVCONTAINER_IMAGE_REF}-cache:local-${GIT_BRANCH_SANITIZED} \
+  type=registry,ref=${DEVCONTAINER_IMAGE_REF}-cache:${DEVCONTAINER_DEFAULT_BRANCH_NAME_SANITIZED} \
+"
+DEVCONTAINER_CACHE_FROMS="${DEVCONTAINER_CACHE_FROMS:=${DEFAULT_DEVCONTAINER_CACHE_FROMS}}"
+
+if [[ "${CI}" != "true" ]]; then
+  DEFAULT_DEVCONTAINER_CACHE_TOS=" \
+    type=registry,rewrite-timestamp=true,mode=max,ref=${DEVCONTAINER_IMAGE_REF}-cache:local-${GIT_BRANCH_SANITIZED} \
+  "
+else
+  DEFAULT_DEVCONTAINER_CACHE_TOS=" \
+    type=registry,rewrite-timestamp=true,mode=max,ref=${DEVCONTAINER_IMAGE_REF}-cache:${GIT_BRANCH_SANITIZED} \
+  "
+fi
+DEVCONTAINER_CACHE_TOS="${DEVCONTAINER_CACHE_TOS:=${DEFAULT_DEVCONTAINER_CACHE_TOS}}"
+
+
+###### Handle _NONE_ values ######
+
+declare -a none_vars_names=(
+  "DEVCONTAINER_DEFINITION_FILES"
+  "DEVCONTAINER_OUTPUTS"
+  "DEVCONTAINER_CACHE_FROMS"
+  "DEVCONTAINER_CACHE_TOS"
+  "DEVCONTAINER_CONTEXT"
+)
+
+for none_var_name in "${none_vars_names[@]}"
+do
+  if [[ "${!none_var_name}" == "_NONE_" ]]; then
+    echo "${none_var_name} set to \"_NONE_\"; removing value"
+    declare "${none_var_name}"=""
+  fi
+done
+
+
+###### Strip whitespace ######
+
+whitespace_strip_array=($DEVCONTAINER_OUTPUTS)
+DEVCONTAINER_OUTPUTS="${whitespace_strip_array[@]}"
+whitespace_strip_array=($DEVCONTAINER_CACHE_FROMS)
+DEVCONTAINER_CACHE_FROMS="${whitespace_strip_array[@]}"
+whitespace_strip_array=($DEVCONTAINER_CACHE_TOS)
+DEVCONTAINER_CACHE_TOS="${whitespace_strip_array[@]}"
+whitespace_strip_array=($DEVCONTAINER_DEFINITION_FILES)
+DEVCONTAINER_DEFINITION_FILES="${whitespace_strip_array[@]}"
+
+
+###### Execute build ######
+
+PREVIOUS_BUILDER_NAME=$(docker builder inspect | grep Name | head -1 | awk -F " " '{print $NF}')
+
+# Set up docker-container builder
+docker builder rm initialize-builder || true
+docker builder create \
+  --bootstrap \
+  --use \
+  --name initialize-builder \
+  --driver docker-container
+
+if [[ "${DEVCONTAINER_DEFINITION_TYPE}" == "build" ]]; then
+  # Image build case
+
+  # Expand image build args
+  DEVCONTAINER_OUTPUT_ARG=""
+  if [[ ${DEVCONTAINER_OUTPUTS} != "" ]]; then
+    DEVCONTAINER_OUTPUTS=($DEVCONTAINER_OUTPUTS)
+    for output in "${DEVCONTAINER_OUTPUTS[@]}"
+    do
+      DEVCONTAINER_OUTPUT_ARG="--output=${output} ${DEVCONTAINER_OUTPUT_ARG}"
+    done
+  fi
+  DEVCONTAINER_CACHE_FROM_ARG=""
+  if [[ ${DEVCONTAINER_CACHE_FROMS} != "" ]]; then
+    DEVCONTAINER_CACHE_FROMS=($DEVCONTAINER_CACHE_FROMS)
+    for cache_from in "${DEVCONTAINER_CACHE_FROMS[@]}"
+    do
+      DEVCONTAINER_CACHE_FROM_ARG="--cache-from= ${cache_from} ${DEVCONTAINER_CACHE_FROM_ARG}"
+    done
+  fi
+  DEVCONTAINER_CACHE_TO_ARG=""
+  if [[ ${DEVCONTAINER_CACHE_TOS} != "" ]]; then
+    DEVCONTAINER_CACHE_TOS=($DEVCONTAINER_CACHE_TOS)
+    for cache_to in "${DEVCONTAINER_CACHE_TOS[@]}"
+    do
+      DEVCONTAINER_CACHE_TO_ARG="--cache-to=${cache_to} ${DEVCONTAINER_CACHE_TO_ARG}"
+    done
+  fi
+
+  # Build image
+  echo "Will build image from Dockerfile \"$DEVCONTAINER_DEFINITION_FILES\" in context \"$DEVCONTAINER_CONTEXT\", with output args \"$DEVCONTAINER_OUTPUT_ARG\" and cache args \"$DEVCONTAINER_CACHE_FROM_ARG $DEVCONTAINER_CACHE_TO_ARG\""
+  docker buildx build \
+    --builder initialize-builder \
+    --file $DEVCONTAINER_DEFINITION_FILES \
+    $DEVCONTAINER_OUTPUT_ARG \
+    $DEVCONTAINER_CACHE_FROM_ARG \
+    $DEVCONTAINER_CACHE_TO_ARG \
+    $DEVCONTAINER_CONTEXT \
+    $DEVCONTAINER_BUILD_ADDITIONAL_ARGS
+
+elif [[ "${DEVCONTAINER_DEFINITION_TYPE}" == "bake" ]]; then
+  # Bake case
+
+  # Expand multiple --file args
+  DEVCONTAINER_DEFINITION_FILES_ARG=""
+  if [[ ${DEVCONTAINER_DEFINITION_FILES} != "" ]]; then
+    DEVCONTAINER_DEFINITION_FILES=($DEVCONTAINER_DEFINITION_FILES)
+    for file in "${DEVCONTAINER_DEFINITION_FILES[@]}"
+    do
+      DEVCONTAINER_DEFINITION_FILES_ARG="${DEVCONTAINER_DEFINITION_FILES_ARG} --file ${file}"
+    done
+  fi
+
+  # Export image config vars
+  export DEVCONTAINER_OUTPUTS
+  export DEVCONTAINER_CACHE_FROMS
+  export DEVCONTAINER_CACHE_TOS
+
+  # Bake image
+  echo "Will bake with config:"
+  docker buildx bake \
+    --print \
+    --builder initialize-builder \
+    $DEVCONTAINER_DEFINITION_FILES_ARG \
+    $DEVCONTAINER_BUILD_ADDITIONAL_ARGS
+
+  docker buildx bake \
+    --builder initialize-builder \
+    $DEVCONTAINER_DEFINITION_FILES_ARG \
+    $DEVCONTAINER_BUILD_ADDITIONAL_ARGS
+fi
+
+docker builder use $PREVIOUS_BUILDER_NAME
