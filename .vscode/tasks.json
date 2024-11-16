@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pre-commit all files",
+      "type": "shell",
+      "command": "pre-commit run --all-files",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker dive",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-it",
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock",
+        "wagoodman/dive:latest",
+        "${input:dockerImage}"
+      ],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "dockerImage",
+      "description": "Docker image",
+      "type": "promptString"
+    }
+  ]
+}
