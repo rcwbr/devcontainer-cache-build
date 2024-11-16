@@ -162,6 +162,15 @@ jobs:
       packages: write
 ```
 
+The default behavior of the workflow provides arguments for use with the [useradd Dockerfile partial](https://github.com/rcwbr/dockerfile-partials/tree/main/useradd) for Codespaces user provisioning. These arguments must be forwarded to the `devcontainer-cache-build-initialize` script, e.g. via the `DEVCONTAINER_BUILD_ADDITIONAL_ARGS` variable:
+
+```bash
+# .devcontainer/initialize
+
+export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$@"
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.0/devcontainer-cache-build-initialize | bash
+```
+
 ## Contributing
 
 ### CI/CD
