@@ -1,0 +1,26 @@
+on:
+  workflow_call:
+    inputs:
+      initialize-args:
+        description: Args to provide to the initialize script, e.g. to configure user info
+        default: "--set useradd.args.USER=codespace --set useradd.args.USER_UID=1000 --set useradd.args.USER_GID=1000 --set pre-commit.args.USER=codespace"
+        required: false
+        type: string
+jobs:
+  devcontainer-cache-build:
+    name: Populate devcontainer image cache
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.7
+      - name: GHCR Login
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build devcontainer cache
+        run: |
+          ./.devcontainer/initialize ${{ inputs.initialize-args }}
