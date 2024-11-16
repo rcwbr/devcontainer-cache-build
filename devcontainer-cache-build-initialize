@@ -118,6 +118,7 @@ DEVCONTAINER_DEFINITION_FILES="${whitespace_strip_array[@]}"
 ###### Execute build ######
 
 PREVIOUS_BUILDER_NAME=$(docker builder inspect | grep Name | head -1 | awk -F " " '{print $NF}')
+export SOURCE_DATE_EPOCH=1731797200 # Specify a static value for image and layer timestamps
 
 # Set up docker-container builder
 docker builder rm initialize-builder || true
