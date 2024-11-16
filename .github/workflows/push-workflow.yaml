@@ -1,0 +1,14 @@
+name: Push workflow
+on: push
+jobs:
+  devcontainer-cache-build:
+    uses: ./.github/workflows/devcontainer-cache-build.yaml
+    permissions:
+      packages: write
+  release-it-workflow:
+    uses: rcwbr/release-it-gh-workflow/.github/workflows/release-it-workflow.yaml@0.2.0
+    with:
+      app-id: 1050758 # devcntr-cache-build-ci-release-it release-it app
+      app-environment: Repo release
+    secrets:
+      app-secret: ${{ secrets.RELEASE_IT_GITHUB_APP_KEY }} # Secret belonging to the Repo release environment
