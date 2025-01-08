@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo "Logging in in devcontainer-prebuild..."
+# Default to GITHUB_TOKEN for CI builds
+# DEVCONTAINER_HOST_ prefix applied by the devcontainer-cache-build-initialize script; see README.md
+DEVCONTAINER_GITHUB_TOKEN="${DEVCONTAINER_HOST_DEVCONTAINER_GITHUB_TOKEN:=$DEVCONTAINER_HOST_DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE}"
+
+# Log in to GHCR as devcontainer initialize prebuild step
+echo "$DEVCONTAINER_GITHUB_TOKEN" | docker login ghcr.io --username "$DEVCONTAINER_HOST_GITHUB_USER" --password-stdin
