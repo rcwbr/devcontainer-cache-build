@@ -35,7 +35,7 @@ graph TD;
 
 ### Initialize script
 
-The initialize script replaces `build` in `.devcontainer/devcontainer.json`, and computes appropriate configuration for the devcontainer image Docker build command.
+The initialize script replaces `build` in `.devcontainer/devcontainer.json`, and computes appropriate configuration for the devcontainer image Docker build command. Internally, it wraps a Docker container run, in which the configuration logic and build execution is managed.
 
 #### Initialize script basic usage
 
@@ -108,12 +108,13 @@ target "default" {
 
 #### Initialize script inputs
 
-The `devcontainer-cache-build-initialize` script reads several environment variables as configuration. To provide an empty value for an input and avoid the default, set the variables to `"_NONE_"`.
+The `devcontainer-cache-build-initialize` script reads several environment variables as configuration.
 
 | Variable | Required | Default | Effect |
 | --- | --- | --- | --- |
 | `DEVCONTAINER_IMAGE` | &check; | N/A | The tag applied to the image build |
-| `DEVCONTAINER_BUILD_ADDITIONAL_ARGS` | &cross; | N/A | Arbitrary additional args forwarded to the `build` or `bake` command |
+| `DEVCONTAINER_BUILD_ADDITIONAL_ARGS` | &cross; | N/A | Arbitrary additional args forwarded to the `build` or `bake` command, as comma-separated `key=value` pairs in [Python-on-whales syntax](https://github.com/gabrieldemarmiesse/python-on-whales) |
+| `DEVCONTAINER_CACHE_BUILD_OVERRIDE_*` | &cross; | None | Special env variables to pass through to the build execution context, that may not be exportable. Supported variables are `USER`, `UID`, and `USER_GID` (e.g. `DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER=my_username`...) |
 | `DEVCONTAINER_CACHE_FROMS` | &cross; | `type=registry,ref=[DEVCONTAINER_REGISTRY]-cache:[current git branch name sanitized] type=registry,ref=[DEVCONTAINER_REGISTRY]-cache:local-[current git branch name sanitized] type=registry,ref=[DEVCONTAINER_REGISTRY]-cache:[DEVCONTAINER_DEFAULT_BRANCH_NAME, sanitized]` | Each [`cache-from` arg](https://docs.docker.com/reference/cli/docker/buildx/build/#cache-from) to be applied to the image build, space separated |
 | `DEVCONTAINER_CACHE_TOS` | &cross; | `type=registry,rewrite-timestamp=true,mode=max,ref=[DEVCONTAINER_REGISTRY]-cache:[local-][current git branch name sanitized]` | Each [`cache-to` arg](https://docs.docker.com/reference/cli/docker/buildx/build/#cache-to) to be applied to the image build, space separated. The default value includes `local-` applied as a version prefix unless `CI=true` |
 | `DEVCONTAINER_CONTEXT` | &cross; | `.` | The build context for the image |
@@ -121,9 +122,12 @@ The `devcontainer-cache-build-initialize` script reads several environment varia
 | `DEVCONTAINER_DEFINITION_TYPE` | &cross; | `build` | The image definition type, [basic Docker build (`build`)](https://docs.docker.com/reference/cli/docker/buildx/build/) or [Bake (`bake`)](https://docs.docker.com/reference/cli/docker/buildx/bake/) |
 | `DEVCONTAINER_DEFINITION_FILES` | &cross; | `.devcontainer/Dockerfile`, or `.devcontainer/bake.hcl` if `DEVCONTAINER_DEFINITION_TYPE` is `bake` | The Dockerfile or bake config file path(s) for the image build, space separated |
 | `DEVCONTAINER_INITIALIZE_PID` | &cross; | N/A | If defined, must be set to the process ID of the command provided to the `devcontainer.json` `initializeCommand` (often `$PPID`). Used to determine whether the context of the `initializeCommand` call is a new container bringup, based on the presence of the the [`--expect-existing-container`](https://github.com/devcontainers/cli/blob/9ba1fdaa11dee087b142d33e4ac13c5788392e34/src/spec-node/devContainersSpecCLI.ts#L196) argument |
-| `DEVCONTAINER_OUTPUTS` | &cross; | `type=image,name=[DEVCONTAINER_REGISTRY],push=[DEVCONTAINER_PUSH_IMAGE]` | Each [`output` arg](https://docs.docker.com/reference/cli/docker/buildx/build/#output) to applt to the image build, space separated |
+| `DEVCONTAINER_OUTPUTS` | &cross; | `type=image,name=[DEVCONTAINER_REGISTRY],push=[DEVCONTAINER_PUSH_IMAGE]` | Each [`output` arg](https://docs.docker.com/reference/cli/docker/buildx/build/#output) to apply to the image build, space separated |
+| `DEVCONTAINER_PREBUILD_SCRIPT` | &cross; | None | The path to a script to execute in advance of image build operations, e.g. for `docker login`s (see [Initialize script prebuild file usage](#initialize-script-prebuild-file-usage)). Relative to the repo root; must resolve to a file within the repo directory |
 | `DEVCONTAINER_PUSH_IMAGE` | &cross; | `false` | Whether to push the image to the provided registry (requires `DEVCONTAINER_REGISTRY`) |
 | `DEVCONTAINER_REGISTRY` | &cross; | `DEVCONTAINER_IMAGE` | The registry for the image and/or cache |
+| `*` | &cross; | N/A | In the case of bake builds, all additional environment variables are forwarded to the build execution context |
+
 
 The image build leverages any values provided or computed to `DEVCONTAINER_CACHE_FROM` as cache inputs.
 
@@ -134,19 +138,29 @@ The `devcontainer-cache-build-initialize` script image build produces several ou
 - An image in the local daemon image store (the [`image` output type](https://docs.docker.com/reference/cli/docker/buildx/build/#image)) at the name given by `DEVCONTAINER_IMAGE`
 - Image build cache output published as specified by `DEVCONTAINER_CACHE_TO`
 
+#### Initialize script prebuild file usage
+
+The initialize script supports injecting a script (identified via the `DEVCONTAINER_PREBUILD_SCRIPT` env var) before build actions are taken, for example to perform authentication actions such as `docker login` within the initialize script container context. As the script must be available within the container context to execute, the value provided to `DEVCONTAINER_PREBUILD_SCRIPT` must be a file within the repository directory, so that it may be mounted to the container.
+
+Env vars from the host (especially useful for authenication use cases) are available to the `DEVCONTAINER_PREBUILD_SCRIPT` script, but are remapped under a `DEVCONTAINER_HOST_` prefix. For example, `DOCKERHUB_PASSWORD` in the host would be available to the script as `DEVCONTAINER_HOST_DOCKERHUB_PASSWORD`.
+
 #### Initialize script GitHub container registry setup
 
-Configuring the `devcontainer-cache-build-initialize` script with a plain image name results in targeting outputs and cache to [DockerhHub](https://hub.docker.com/) by default. Setting the `DEVCONTAINER_REGISTRY` to `ghcr.io/[your user/org name]` instead allows you to target the [GitHub container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) instead. To set up a container repository for this in a local environment, use [`docker login`](https://docs.docker.com/reference/cli/docker/login/) [against `ghcr.io`](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic). For GitHub Codespaces environments, use the following steps:
+Configuring the `devcontainer-cache-build-initialize` script with a plain image name results in targeting outputs and cache to [DockerHub](https://hub.docker.com/) by default. Setting the `DEVCONTAINER_REGISTRY` to `ghcr.io/[your user/org name]` instead allows you to target the [GitHub container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) instead. To set up a container repository for this in a local environment, use [`docker login`](https://docs.docker.com/reference/cli/docker/login/) [against `ghcr.io`](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic). For GitHub Codespaces environments, use the following steps:
 
 1. Create a [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) with [`write:packages` scope](https://docs.github.com/en/codespaces/reference/allowing-your-codespace-to-access-a-private-registry#publishing-a-package-from-a-codespace) for the repository to which the image belongs.
 1. Add the token as a [Codespace secret](https://docs.github.com/en/codespaces/managing-your-codespaces/managing-your-account-specific-secrets-for-github-codespaces#adding-a-secret), to the repository to which the Codespaces environment belongs.
-1. [Use the secret variable to `docker login`](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic) in the Codespace environment by adding a login command to the devcontainer `initializeCommand` in advance of the `curl` to the intialize script, e.g.:
+1. [Use the secret variable to `docker login`](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic) in the Codespace environment by adding a login command to the devcontainer [prebuild script](#initialize-script-prebuild-file-usage), keeping in mind the `DEVCONTAINER_HOST_` prefix that will be applied by the initialize script.
+1. Set the `DEVCONTAINER_PREBUILD_SCRIPT` to the path of the devcontainer prebuild script in advance of the `curl` to the intialize script, e.g.:
 ```bash
-# .devcontainer/initialize
+# .devcontainer/devcontainer-prebuild
 
-echo $DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE | docker login ghcr.io --username $GITHUB_USER --password-stdin
+echo $DEVCONTAINER_HOST_DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE | docker login ghcr.io --username $DEVCONTAINER_HOST_GITHUB_USER --password-stdin
+
+# .devcontainer/initialize
 ...
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.0/devcontainer-cache-build-initialize | bash
+export DEVCONTAINER_PREBUILD_SCRIPT=.devcontainer/devcontainer-prebuild
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.2/devcontainer-cache-build-initialize | bash
 ```
 
 ### GitHub Actions workflow
@@ -162,6 +176,8 @@ jobs:
       packages: write
 ```
 
+> :warning: To avoid 403 Forbidden errors in the workflow, the [prebuild script](#initialize-script-prebuild-file-usage) must authenticate to GitHub Container Registry using `GITHUB_USER` and `DEVCONTAINER_GITHUB_TOKEN`, e.g. `echo $DEVCONTAINER_HOST_DEVCONTAINER_GITHUB_TOKEN | docker login ghcr.io --username $DEVCONTAINER_HOST_GITHUB_USER --password-stdin`
+
 The default behavior of the workflow provides arguments for use with the [useradd Dockerfile partial](https://github.com/rcwbr/dockerfile-partials/tree/main/useradd) for Codespaces user provisioning. These arguments must be forwarded to the `devcontainer-cache-build-initialize` script, e.g. via the `DEVCONTAINER_BUILD_ADDITIONAL_ARGS` variable:
 
 ```bash
@@ -170,6 +186,16 @@ The default behavior of the workflow provides arguments for use with the [userad
 export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$@"
 curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.0/devcontainer-cache-build-initialize | bash
 ```
+
+#### GitHub Actions workflow inputs usage
+
+| Input | Required | Default | Type | Effect |
+| --- | --- | --- | --- | --- |
+| `build-context-user` | &cross; | `"codespace"` | string | The user name to set for the .devcontainer/initialize call |
+| `build-context-uid` | &cross; | `1000` | number | The UID to set for the .devcontainer/initialize call |
+| `build-context-gid` | &cross; | `1000` | number | The USER_GID to set for the .devcontainer/initialize call |
+| `devcontainer-cache-build-image-override` | &cross; | `""` | string | The image name to use to override the default devcontainer-cache-build image |
+| `initialize-args` | &cross; | `""` | string | Args to provide to the `devcontainer-cache-build-initialize` script; by default set to values for building Codespaces-compatible images |
 
 ## Contributing
 
@@ -184,3 +210,13 @@ It uses its own [reusable devcontainer cache build workflow](#github-actions-wor
 The GitHub repo settings for this repo are defined as code using the [Probot settings GitHub App](https://probot.github.io/apps/settings/). Settings values are defined in the `.github/settings.yml` file. Enabling automation of settings via this file requires installing the app.
 
 The settings applied are as recommended in the [release-it-gh-workflow usage](https://github.com/rcwbr/release-it-gh-workflow/blob/4dea4eaf328b60f92dab1b5bd2a63daefa85404b/README.md?plain=1#L58), including tag and branch protections, GitHub App and environment authentication, and required checks.
+
+### Local image build
+
+To build the devcontainer-cache-build tool image locally, use the following command:
+
+```bash
+docker builder create --use --driver docker-container # Skip if you already have a docker-container builder activated
+export IMAGE_NAME=devcontainer-cache-build
+docker buildx bake -f github-cache-bake.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.2.1
+```
