@@ -41,6 +41,9 @@ rulesets:
       - actor_id: 5 # Based on https://registry.terraform.io/providers/integrations/github/latest/docs/resources/organization_ruleset#bypass_actors
         actor_type: RepositoryRole
         bypass_mode: pull_request
+      - actor_id: 1050758 # devcntr-cache-build-ci-release-it release-it app
+        actor_type: Integration
+        bypass_mode: always
     rules:
       - type: creation
       - type: deletion
