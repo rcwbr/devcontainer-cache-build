@@ -39,7 +39,7 @@ The initialize script replaces `build` in `.devcontainer/devcontainer.json`, and
 
 #### Initialize script basic usage
 
-To use the script, add `"initializeCommand": "curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.2/devcontainer-cache-build-initialize | bash"` to your `devcontainer.json`, or to scripts referenced by it. For example, you might replace
+To use the script, add `"initializeCommand": "curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.2.0/devcontainer-cache-build-initialize | bash"` to your `devcontainer.json`, or to scripts referenced by it. For example, you might replace
 
 ```jsonc
 {
@@ -68,7 +68,7 @@ and `.devcontainer/initialize`:
 #!/bin/bash
 
 export DEVCONTAINER_IMAGE=my-project-devcontainer
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.2/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.2.0/devcontainer-cache-build-initialize | bash
 ```
 
 #### Initialize script specific version usage
@@ -160,7 +160,7 @@ echo $DEVCONTAINER_HOST_DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE | docke
 # .devcontainer/initialize
 ...
 export DEVCONTAINER_PREBUILD_SCRIPT=.devcontainer/devcontainer-prebuild
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.2/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.2.0/devcontainer-cache-build-initialize | bash
 ```
 
 ### GitHub Actions workflow
@@ -171,7 +171,7 @@ Leveraging the entire lifecycle of the devcontainer cache requires applying a CI
 on: push
 jobs:
   devcontainer-cache-build:
-    uses: rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.1.2
+    uses: rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.2.0
     permissions:
       packages: write
 ```
@@ -184,7 +184,7 @@ The default behavior of the workflow provides arguments for use with the [userad
 # .devcontainer/initialize
 
 export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$@"
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.1.2/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.2.0/devcontainer-cache-build-initialize | bash
 ```
 
 #### GitHub Actions workflow inputs usage
