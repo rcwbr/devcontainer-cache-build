@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo $DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE | docker login ghcr.io --username $GITHUB_USER --password-stdin
 export DEVCONTAINER_IMAGE=devcontainer-cache-build-devcontainer
 export DEVCONTAINER_REGISTRY=ghcr.io/rcwbr
 export DEVCONTAINER_DEFINITION_TYPE=bake
@@ -14,5 +13,10 @@ devcontainer_definition_files_arr=(
 )
 DEVCONTAINER_DEFINITION_FILES="${devcontainer_definition_files_arr[@]}"
 export DEVCONTAINER_DEFINITION_FILES
-export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="https://github.com/rcwbr/dockerfile-partials.git#0.2.1 $@"
+export DEVCONTAINER_PREBUILD_SCRIPT=.devcontainer/devcontainer-prebuild
+export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="remote_definition=https://github.com/rcwbr/dockerfile-partials.git#0.3.0"
+# If an argument is passed to this script, pass it to the build call
+if [[ -z $# ]]; then
+  export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$DEVCONTAINER_BUILD_ADDITIONAL_ARGS $@"
+fi
 bash devcontainer-cache-build-initialize

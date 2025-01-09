@@ -1,9 +1,29 @@
 on:
   workflow_call:
     inputs:
+      build-context-user:
+        description: The user name to set for the .devcontainer/initialize call
+        default: "codespace"
+        required: false
+        type: string
+      build-context-uid:
+        description: The UID to set for the .devcontainer/initialize call
+        default: 1000
+        required: false
+        type: number
+      build-context-gid:
+        description: The USER_GID to set for the .devcontainer/initialize call
+        default: 1000
+        required: false
+        type: number
+      devcontainer-cache-build-image-override:
+        description: The image name to use to override the default devcontainer-cache-build image
+        default: ""
+        required: false
+        type: string
       initialize-args:
         description: Args to provide to the initialize script, e.g. to configure user info
-        default: "--set useradd.args.USER=codespace --set useradd.args.USER_UID=1000 --set useradd.args.USER_GID=1000 --set pre-commit.args.USER=codespace"
+        default: ""
         required: false
         type: string
 jobs:
@@ -23,4 +43,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build devcontainer cache
         run: |
+          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER="${{ inputs.build-context-user }}"
+          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_UID="${{ inputs.build-context-uid }}"
+          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER_GID="${{ inputs.build-context-gid }}"
+          export DEVCONTAINER_CACHE_BUILD_IMAGE="${{ inputs.devcontainer-cache-build-image-override }}"
+          export GITHUB_USER=${{ github.actor }}
+          export DEVCONTAINER_GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           ./.devcontainer/initialize ${{ inputs.initialize-args }}
