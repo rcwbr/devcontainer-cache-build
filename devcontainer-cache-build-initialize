@@ -47,5 +47,6 @@ docker run \
   -e DEVCONTAINER_PREBUILD_SCRIPT \
   -e DEVCONTAINER_PUSH_IMAGE \
   -e DEVCONTAINER_REGISTRY \
+  -e DOCKER_CONFIG_JSON="$(cat ~/.docker/config.json)" \
   --env-file <(env | sed 's/^/DEVCONTAINER_HOST_/') \
   "$DEVCONTAINER_CACHE_BUILD_IMAGE"
