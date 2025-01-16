@@ -4,9 +4,11 @@ import json
 import re
 import subprocess
 from os import environ as env
+from os import getcwd as getcwd
+from pathlib import Path
 
 from python_on_whales import docker
-from git import Repo
+from git import Repo, GitConfigParser
 
 INITIALIZE_BUILDER_NAME = "initialize-builder"
 DEVCONTAINER_HOST_ENV_VAR_PREFIX = "DEVCONTAINER_HOST_"
@@ -89,8 +91,11 @@ DEVCONTAINER_DEFINITION_FILES = (
 )
 
 REPO = Repo(".")
+# Configure git to ignore ownership of the current directory
+REPO.config_writer(config_level='global').set_value("safe", "directory", getcwd())
+# Get the branch name unless in detached head state
+GIT_BRANCH = str(REPO.head.commit) if REPO.head.is_detached else str(REPO.head.ref)
 # Replace any non-alphanumeric (or underscore) characters in the branch names with dashes
-GIT_BRANCH = str(REPO.head.ref)
 GIT_BRANCH_SANITIZED = sanitize_ref(GIT_BRANCH)
 DEVCONTAINER_DEFAULT_BRANCH_NAME_SANITIZED = sanitize_ref(DEVCONTAINER_DEFAULT_BRANCH_NAME)
 
@@ -168,6 +173,36 @@ DEVCONTAINER_CACHE_TOS = docker_destination_list_from_env_var(
     }]
   )
 )
+
+
+###### Prepare Docker client credentials ######
+
+DOCKER_CONFIG_JSON = env.get("DOCKER_CONFIG_JSON")
+if DOCKER_CONFIG_JSON is not None:
+  try:
+    print("Loading Docker config JSON from env var")
+    docker_config_content = json.loads(DOCKER_CONFIG_JSON)
+    docker_config_folder = Path(Path.home(), ".docker")
+    docker_config_folder.mkdir(exist_ok=True)
+    docker_config_filename = Path(docker_config_folder, "config.json")
+
+    if docker_config_filename.exists() and docker_config_filename.is_file():
+      print(f"Docker config file {docker_config_filename} exists, will merge config content")
+      with open(docker_config_filename, "r") as docker_config_file:
+        try:
+          docker_config_content = json.load(docker_config_file) | docker_config_content
+        except ValueError:
+          print(f"Invalid JSON content in {docker_config_filename}: {docker_config_file.read()}")
+
+    with open(docker_config_filename, "w") as docker_config_file:
+      print(f"Writing Docker config JSON to file {docker_config_filename}")
+      print(json.dumps(docker_config_content, indent=4))
+      json.dump(docker_config_content, docker_config_file, indent=4)
+
+  except ValueError:
+    print(f"Invalid JSON content for DOCKER_CONFIG_JSON: {DOCKER_CONFIG_JSON}")
+else:
+  print(f"No value set for DOCKER_CONFIG_JSON")
 
 
 ###### Execute pre-build script ######
