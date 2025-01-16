@@ -150,18 +150,11 @@ Configuring the `devcontainer-cache-build-initialize` script with a plain image 
 
 1. Create a [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) with [`write:packages` scope](https://docs.github.com/en/codespaces/reference/allowing-your-codespace-to-access-a-private-registry#publishing-a-package-from-a-codespace) for the repository to which the image belongs.
 1. Add the token as a [Codespace secret](https://docs.github.com/en/codespaces/managing-your-codespaces/managing-your-account-specific-secrets-for-github-codespaces#adding-a-secret), to the repository to which the Codespaces environment belongs.
-1. [Use the secret variable to `docker login`](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic) in the Codespace environment by adding a login command to the devcontainer [prebuild script](#initialize-script-prebuild-file-usage), keeping in mind the `DEVCONTAINER_HOST_` prefix that will be applied by the initialize script.
-1. Set the `DEVCONTAINER_PREBUILD_SCRIPT` to the path of the devcontainer prebuild script in advance of the `curl` to the intialize script, e.g.:
-```bash
-# .devcontainer/devcontainer-prebuild
+  1. Name the variable for the token secret as `[prefix for your repo]_CONTAINER_REGISTRY_PASSWORD`
+1. Create another secret with the same name prefix but for the username `[prefix for your repo]_CONTAINER_REGISTRY_USER`, with the value set to your GitHub username
+1. Create another secret with the same name prefix called `[prefix for your repo]_CONTAINER_REGISTRY_SERVER`, with the value set to `ghcr.io`
 
-echo $DEVCONTAINER_HOST_DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE | docker login ghcr.io --username $DEVCONTAINER_HOST_GITHUB_USER --password-stdin
-
-# .devcontainer/initialize
-...
-export DEVCONTAINER_PREBUILD_SCRIPT=.devcontainer/devcontainer-prebuild
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.2.1/devcontainer-cache-build-initialize | bash
-```
+These are [automatically applied by GitHub](https://docs.github.com/en/codespaces/reference/allowing-your-codespace-to-access-a-private-registry#accessing-images-stored-in-other-registries) to authenticate in a Codespace. This is necessary because [other secrets are not accessible during Codespace image build](https://docs.github.com/en/codespaces/managing-your-codespaces/managing-your-account-specific-secrets-for-github-codespaces#using-secrets).
 
 ### GitHub Actions workflow
 
@@ -175,8 +168,6 @@ jobs:
     permissions:
       packages: write
 ```
-
-> :warning: To avoid 403 Forbidden errors in the workflow, the [prebuild script](#initialize-script-prebuild-file-usage) must authenticate to GitHub Container Registry using `GITHUB_USER` and `DEVCONTAINER_GITHUB_TOKEN`, e.g. `echo $DEVCONTAINER_HOST_DEVCONTAINER_GITHUB_TOKEN | docker login ghcr.io --username $DEVCONTAINER_HOST_GITHUB_USER --password-stdin`
 
 The default behavior of the workflow provides arguments for use with the [useradd Dockerfile partial](https://github.com/rcwbr/dockerfile-partials/tree/main/useradd) for Codespaces user provisioning. These arguments must be forwarded to the `devcontainer-cache-build-initialize` script, e.g. via the `DEVCONTAINER_BUILD_ADDITIONAL_ARGS` variable:
 
