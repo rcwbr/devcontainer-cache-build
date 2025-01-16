@@ -47,6 +47,4 @@ jobs:
           export DEVCONTAINER_CACHE_BUILD_OVERRIDE_UID="${{ inputs.build-context-uid }}"
           export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER_GID="${{ inputs.build-context-gid }}"
           export DEVCONTAINER_CACHE_BUILD_IMAGE="${{ inputs.devcontainer-cache-build-image-override }}"
-          export GITHUB_USER=${{ github.actor }}
-          export DEVCONTAINER_GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           ./.devcontainer/initialize ${{ inputs.initialize-args }}
