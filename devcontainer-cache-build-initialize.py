@@ -4,9 +4,10 @@ import json
 import re
 import subprocess
 from os import environ as env
+from os import getcwd as getcwd
 
 from python_on_whales import docker
-from git import Repo
+from git import Repo, GitConfigParser
 
 INITIALIZE_BUILDER_NAME = "initialize-builder"
 DEVCONTAINER_HOST_ENV_VAR_PREFIX = "DEVCONTAINER_HOST_"
@@ -89,8 +90,11 @@ DEVCONTAINER_DEFINITION_FILES = (
 )
 
 REPO = Repo(".")
+# Configure git to ignore ownership of the current directory
+REPO.config_writer(config_level='global').set_value("safe", "directory", getcwd())
+# Get the branch name unless in detached head state
+GIT_BRANCH = str(REPO.head.commit) if REPO.head.is_detached else str(REPO.head.ref)
 # Replace any non-alphanumeric (or underscore) characters in the branch names with dashes
-GIT_BRANCH = str(REPO.head.ref)
 GIT_BRANCH_SANITIZED = sanitize_ref(GIT_BRANCH)
 DEVCONTAINER_DEFAULT_BRANCH_NAME_SANITIZED = sanitize_ref(DEVCONTAINER_DEFAULT_BRANCH_NAME)
 
