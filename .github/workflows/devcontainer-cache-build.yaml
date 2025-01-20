@@ -42,9 +42,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build devcontainer cache
+        env:
+          DEVCONTAINER_PUSH_IMAGE: true
+          DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER: ${{ inputs.build-context-user }}
+          DEVCONTAINER_CACHE_BUILD_OVERRIDE_UID: ${{ inputs.build-context-uid }}
+          DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER_GID: ${{ inputs.build-context-gid }}
+          DEVCONTAINER_CACHE_BUILD_IMAGE: ${{ inputs.devcontainer-cache-build-image-override }}
         run: |
-          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER="${{ inputs.build-context-user }}"
-          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_UID="${{ inputs.build-context-uid }}"
-          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER_GID="${{ inputs.build-context-gid }}"
-          export DEVCONTAINER_CACHE_BUILD_IMAGE="${{ inputs.devcontainer-cache-build-image-override }}"
           ./.devcontainer/initialize ${{ inputs.initialize-args }}
