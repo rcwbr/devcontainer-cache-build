@@ -308,8 +308,16 @@ if DEVCONTAINER_DEFINITION_TYPE.lower() == "build":
   )
 elif DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
   # Docker bake case
-  print(json.dumps(docker.buildx.bake(
+  bake_json = json.dumps(docker.buildx.bake(
     print=True,
     **bake_params
-  ), indent=2))
+  ), indent=2)
+  print(bake_json)
+
+  # In CI, write the bake config to GitHub output
+  if env.get("CI", "false").lower() in ["true", "t", "yes", "y", "1"]:
+    with open(env.get("GITHUB_OUTPUT"), "a") as gh_output:
+      gh_output.write(f"metadata={bake_json}")
+
+  # Execute bake build
   docker.buildx.bake(**bake_params)
