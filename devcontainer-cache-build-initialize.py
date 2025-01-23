@@ -275,6 +275,7 @@ if DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
 
 ###### Pre-pull cache images ######
 
+bake_config = {}
 if DEVCONTAINER_DEFINITION_TYPE.lower() == "build":
   # Docker build case 
   for output_image in DEVCONTAINER_OUTPUTS:
@@ -291,6 +292,30 @@ elif DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
         image_name = dict_from_string(pull_image)["ref"]
         print(f"Pulling image for {target_name} cache population: {image_name}")
         docker.pull(image_name)
+
+
+###### CI bake config output ######
+
+# In CI, write the bake config to GitHub output
+if env.get("CI", "false").lower() in ["true", "t", "yes", "y", "1"] and DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
+  GITHUB_OUTPUT = env.get("GITHUB_OUTPUT")
+  final_layer = bake_config["group"]["default"]["targets"][-1]
+  final_image_config = bake_config["target"][final_layer]
+  final_image_output_dicts = [dict_from_string(output) for output in final_image_config["output"]]
+  final_image_output = ([
+    output_dict["name"]
+    for output_dict in final_image_output_dicts
+    if "name" in output_dict and "push" in output_dict and output_dict["push"]
+  ] + [
+    output_dict["ref"]
+    for output_dict in final_image_output_dicts
+    if "ref" in output_dict
+  ])[-1]
+
+  print(f"CI environment for bake build detected, writing Bake config and ref {final_image_output} for final layer {final_layer} to GITHUB_OUTPUT {GITHUB_OUTPUT}")
+  with open(GITHUB_OUTPUT, "a") as gh_output:
+    gh_output.write(f"ref={final_image_output}\n")
+    gh_output.write(f"config={final_image_config}\n")
 
 
 ###### Execute the build ######
@@ -312,4 +337,5 @@ elif DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
     print=True,
     **bake_params
   ), indent=2))
+  # Execute bake build
   docker.buildx.bake(**bake_params)

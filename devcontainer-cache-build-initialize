@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 
 # Accept an override for the devcontainer-cache-build image
@@ -34,7 +34,9 @@ docker run \
   --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v $(pwd):$(pwd):ro \
+  -v "$GITHUB_OUTPUT":"$GITHUB_OUTPUT" \
   -w $(pwd) \
+  -e CI \
   -e DEVCONTAINER_IMAGE \
   -e DEVCONTAINER_BUILD_ADDITIONAL_ARGS \
   -e DEVCONTAINER_CACHE_FROMS \
@@ -48,5 +50,6 @@ docker run \
   -e DEVCONTAINER_PUSH_IMAGE \
   -e DEVCONTAINER_REGISTRY \
   -e DOCKER_CONFIG_JSON="$(cat ~/.docker/config.json)" \
+  -e GITHUB_OUTPUT \
   --env-file <(env | sed 's/^/DEVCONTAINER_HOST_/') \
   "$DEVCONTAINER_CACHE_BUILD_IMAGE"
