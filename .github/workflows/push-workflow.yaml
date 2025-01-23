@@ -22,7 +22,7 @@ jobs:
       -
         id: docker-bake
         name: Docker Bake
-        uses: docker/bake-action@v5.7.0
+        uses: docker/bake-action@v6.3.0
         with:
           source: https://github.com/rcwbr/dockerfile-partials.git#0.3.0
           files: github-cache-bake.hcl, cwd://docker-bake.hcl
