@@ -26,6 +26,13 @@ on:
         default: ""
         required: false
         type: string
+    outputs:
+      devcontainer-cache-image-ref:
+        description: "The reference of the devcontainer image built by the workflow"
+        value: ${{ jobs.devcontainer-cache-build.outputs.devcontainer-cache-image-ref }}
+      devcontainer-cache-image-config:
+        description: "The Bake config of the (last layer of the) devcontainer image built by the workflow"
+        value: ${{ jobs.devcontainer-cache-build.outputs.devcontainer-cache-image-config }}
 jobs:
   devcontainer-cache-build:
     name: Populate devcontainer image cache
@@ -42,9 +49,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build devcontainer cache
+        id: build-devcontainer-cache
+        env:
+          DEVCONTAINER_PUSH_IMAGE: true
+          DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER: ${{ inputs.build-context-user }}
+          DEVCONTAINER_CACHE_BUILD_OVERRIDE_UID: ${{ inputs.build-context-uid }}
+          DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER_GID: ${{ inputs.build-context-gid }}
+          DEVCONTAINER_CACHE_BUILD_IMAGE: ${{ inputs.devcontainer-cache-build-image-override }}
         run: |
-          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER="${{ inputs.build-context-user }}"
-          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_UID="${{ inputs.build-context-uid }}"
-          export DEVCONTAINER_CACHE_BUILD_OVERRIDE_USER_GID="${{ inputs.build-context-gid }}"
-          export DEVCONTAINER_CACHE_BUILD_IMAGE="${{ inputs.devcontainer-cache-build-image-override }}"
           ./.devcontainer/initialize ${{ inputs.initialize-args }}
+    outputs:
+      devcontainer-cache-image-ref: ${{ steps.build-devcontainer-cache.outputs.ref }}
+      devcontainer-cache-image-config: ${{ steps.build-devcontainer-cache.outputs.config }}
