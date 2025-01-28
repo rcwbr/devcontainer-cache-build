@@ -264,6 +264,7 @@ if DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
       "DEVCONTAINER_CACHE_FROMS": docker_destinations_to_string(DEVCONTAINER_CACHE_FROMS),
       "DEVCONTAINER_CACHE_TOS": docker_destinations_to_string(DEVCONTAINER_CACHE_TOS),
       "DEVCONTAINER_OUTPUTS": docker_destinations_to_string(DEVCONTAINER_OUTPUTS),
+      "GIT_BRANCH_SANITIZED": GIT_BRANCH_SANITIZED,
       # Add devcontainer host env vars to the bake config
       **devcontainer_host_env_vars   
     },
