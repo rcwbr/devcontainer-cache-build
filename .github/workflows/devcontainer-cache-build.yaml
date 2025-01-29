@@ -33,6 +33,9 @@ on:
       devcontainer-cache-image-config:
         description: "The Bake config of the (last layer of the) devcontainer image built by the workflow"
         value: ${{ jobs.devcontainer-cache-build.outputs.devcontainer-cache-image-config }}
+      devcontainer-cache-image-all_configs:
+        description: "The Bake configs of all layers of the devcontainer image built by the workflow"
+        value: ${{ jobs.devcontainer-cache-build.outputs.devcontainer-cache-image-all_configs }}
 jobs:
   devcontainer-cache-build:
     name: Populate devcontainer image cache
@@ -61,3 +64,4 @@ jobs:
     outputs:
       devcontainer-cache-image-ref: ${{ steps.build-devcontainer-cache.outputs.ref }}
       devcontainer-cache-image-config: ${{ steps.build-devcontainer-cache.outputs.config }}
+      devcontainer-cache-image-all_configs: ${{ steps.build-devcontainer-cache.outputs.all_configs }}
