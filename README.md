@@ -156,6 +156,10 @@ Configuring the `devcontainer-cache-build-initialize` script with a plain image 
 
 These are [automatically applied by GitHub](https://docs.github.com/en/codespaces/reference/allowing-your-codespace-to-access-a-private-registry#accessing-images-stored-in-other-registries) to authenticate in a Codespace. This is necessary because [other secrets are not accessible during Codespace image build](https://docs.github.com/en/codespaces/managing-your-codespaces/managing-your-account-specific-secrets-for-github-codespaces#using-secrets).
 
+### GHCR registry setup
+
+If using GHCR as the `DEVCONTAINER_REGISTRY`, the addition of any layer to the devcontainer definition involves configuring a registry for it with appropriate access. This is best achieved by leveraging the [GitHub Actions workflow](#github-actions-workflow), as registry configuration is established automatically. To do this, simply open a PR that contains the layer addition, before trying to rebuild a devcontainer/Codespace with the layer addition. Otherwise, registries may be created as private and require a manual settings change to make them public.
+
 ### GitHub Actions workflow
 
 Leveraging the entire lifecycle of the devcontainer cache requires applying a CI/CD workflow to prepopulate cache. This may be achieved via the reusable workflow defined in `.github/workflows/devcontainer-cache-build.yaml`, e.g.:

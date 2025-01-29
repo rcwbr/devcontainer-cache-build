@@ -264,6 +264,7 @@ if DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
       "DEVCONTAINER_CACHE_FROMS": docker_destinations_to_string(DEVCONTAINER_CACHE_FROMS),
       "DEVCONTAINER_CACHE_TOS": docker_destinations_to_string(DEVCONTAINER_CACHE_TOS),
       "DEVCONTAINER_OUTPUTS": docker_destinations_to_string(DEVCONTAINER_OUTPUTS),
+      "GIT_BRANCH_SANITIZED": GIT_BRANCH_SANITIZED,
       # Add devcontainer host env vars to the bake config
       **devcontainer_host_env_vars   
     },
@@ -287,11 +288,12 @@ elif DEVCONTAINER_DEFINITION_TYPE.lower() == "bake":
   # Docker bake case
   bake_config = docker.buildx.bake(print=True, **bake_params)
   for target_name, target in bake_config["target"].items():
-    for pull_image in target["output"]:
-      if "ref" in dict_from_string(pull_image):
-        image_name = dict_from_string(pull_image)["ref"]
-        print(f"Pulling image for {target_name} cache population: {image_name}")
-        docker.pull(image_name)
+    if "output" in target:
+      for pull_image in target["output"]:
+        if "ref" in dict_from_string(pull_image):
+          image_name = dict_from_string(pull_image)["ref"]
+          print(f"Pulling image for {target_name} cache population: {image_name}")
+          docker.pull(image_name)
 
 
 ###### CI bake config output ######
