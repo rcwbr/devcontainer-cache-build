@@ -307,7 +307,7 @@ if env.get("CI", "false").lower() in ["true", "t", "yes", "y", "1"] and DEVCONTA
   final_image_output = ([
     output_dict["name"]
     for output_dict in final_image_output_dicts
-    if "name" in output_dict and "push" in output_dict and output_dict["push"]
+    if "name" in output_dict
   ] + [
     output_dict["ref"]
     for output_dict in final_image_output_dicts
