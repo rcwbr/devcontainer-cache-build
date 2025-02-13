@@ -307,7 +307,7 @@ if env.get("CI", "false").lower() in ["true", "t", "yes", "y", "1"] and DEVCONTA
   final_image_output = ([
     output_dict["name"]
     for output_dict in final_image_output_dicts
-    if "name" in output_dict and "push" in output_dict and output_dict["push"]
+    if "name" in output_dict
   ] + [
     output_dict["ref"]
     for output_dict in final_image_output_dicts
@@ -318,6 +318,7 @@ if env.get("CI", "false").lower() in ["true", "t", "yes", "y", "1"] and DEVCONTA
   with open(GITHUB_OUTPUT, "a") as gh_output:
     gh_output.write(f"ref={final_image_output}\n")
     gh_output.write(f"config={final_image_config}\n")
+    gh_output.write(f"all_configs={bake_config}\n")
 
 
 ###### Execute the build ######
