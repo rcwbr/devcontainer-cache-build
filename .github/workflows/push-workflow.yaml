@@ -51,7 +51,7 @@ jobs:
     with:
       pre-commit-image: ${{ fromJSON(needs.devcontainer-cache-build.outputs.devcontainer-cache-image-all_configs).target.pre-commit.args.DEVCONTAINER_PRE_COMMIT_IMAGE }}
   release-it-workflow:
-    uses: rcwbr/release-it-gh-workflow/.github/workflows/release-it-workflow.yaml@0.2.2
+    uses: rcwbr/release-it-gh-workflow/.github/workflows/release-it-workflow.yaml@0.2.4
     with:
       app-id: 1050758 # devcntr-cache-build-ci-release-it release-it app
       app-environment: Repo release
