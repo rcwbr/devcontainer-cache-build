@@ -51,6 +51,11 @@ repos:
 # HCL files are for Docker Bake, but formatting/linting tools only exist in the TF ecosystem
 - repo: local
   hooks:
+  - id: hclfmt
+    name: hclfmt
+    language: docker_image
+    entry: alpine/terragrunt:1.10.3 terragrunt hclfmt
+    types: ["hcl"]
   - id: hadolint-docker
     name: Lint Dockerfiles
     description: Runs hadolint Docker image to lint Dockerfiles
