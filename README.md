@@ -20,6 +20,10 @@ population by CI pipeline.
     - [GitHub Actions workflow](#github-actions-workflow)
       - [GitHub Actions workflow inputs usage](#github-actions-workflow-inputs-usage)
   - [Contributing](#contributing)
+    - [devcontainer](#devcontainer)
+      - [devcontainer basic usage](#devcontainer-basic-usage)
+      - [devcontainer Codespaces usage](#devcontainer-codespaces-usage)
+      - [devcontainer pre-commit usage](#devcontainer-pre-commit-usage)
     - [CI/CD](#cicd)
     - [Settings](#settings)
     - [Local image build](#local-image-build)
@@ -273,6 +277,33 @@ curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.6.0/devc
 | `initialize-args`                         | ✗        | `""`          | string | Args to provide to the `devcontainer-cache-build-initialize` script; by default set to values for building Codespaces-compatible images |
 
 ## Contributing<a name="contributing"></a>
+
+### devcontainer<a name="devcontainer"></a>
+
+This repo contains a [devcontainer definition](https://containers.dev/) in the `.devcontainer`
+folder. It leverages its own devcontainer cache build tool and layers
+[defined in the dockerfile-partials repo](https://github.com/rcwbr/dockerfile-partials).
+
+#### devcontainer basic usage<a name="devcontainer-basic-usage"></a>
+
+The devcontainer cache build tool requires authentication to the GitHub package registry, as a token
+stored as `DOCKERFILE_PARTIALS_DEVCONTAINER_INITIALIZE` (see
+[instructions](#initialize-script-github-container-registry-setup)).
+
+#### devcontainer Codespaces usage<a name="devcontainer-codespaces-usage"></a>
+
+For use with Codespaces, the `DOCKERFILE_PARTIALS_DEVCONTAINER_INITIALIZE` token (see
+[devcontainer basic usage](#devcontainer-basic-usage)) must be stored as a Codespaces secret (see
+[instructions](#initialize-script-github-container-registry-setup)), as must values for `USER`, and
+`UID` (see
+[useradd Codespaces usage](https://github.com/rcwbr/dockerfile-partials#useradd-codespaces-usage)).
+
+#### devcontainer pre-commit usage<a name="devcontainer-pre-commit-usage"></a>
+
+By default, the devcontainer configures [pre-commit](https://pre-commit.com/) hooks in the
+repository to ensure commits pass basic testing. This includes enforcing
+[conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/) as the standard for
+this repository, via [commitlint](https://github.com/conventional-changelog/commitlint).
 
 ### CI/CD<a name="cicd"></a>
 
