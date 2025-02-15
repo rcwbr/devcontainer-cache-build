@@ -4,6 +4,7 @@ on:
     branches:
       - main
     tags:
+      - '*'
   pull_request:
 jobs:
   build-docker-image:
