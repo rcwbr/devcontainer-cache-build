@@ -60,7 +60,13 @@ rulesets:
       - type: required_status_checks
         parameters:
           required_status_checks:
+            - context: Build Docker image
+              integration_id: 15368 # GitHub Actions integration ID
+            - context: Dive Docker image space efficiency analysis
+              integration_id: 15368 # GitHub Actions integration ID
             - context: devcontainer-cache-build / Populate devcontainer image cache
+              integration_id: 15368 # GitHub Actions integration ID
+            - context: pre-commit / pre-commit
               integration_id: 15368 # GitHub Actions integration ID
             - context: release-it-workflow / Release-it dry-run
               integration_id: 15368 # GitHub Actions integration ID

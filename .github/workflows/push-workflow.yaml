@@ -1,5 +1,10 @@
 name: Push workflow
-on: push
+on:
+  push:
+    branches:
+      - main
+    tags:
+  pull_request:
 jobs:
   build-docker-image:
     # Build the devcontainer-cache-build-initialize image
@@ -39,8 +44,14 @@ jobs:
       devcontainer-cache-build-image-override: ${{ fromJSON(needs.build-docker-image.outputs.docker-bake-metadata)['default']['image.name'] }}
     permissions:
       packages: write
+  pre-commit:
+    if: github.event_name == 'pull_request'
+    uses: rcwbr/dockerfile-partials/.github/workflows/pre-commit.yaml@0.4.0
+    needs: devcontainer-cache-build
+    with:
+      pre-commit-image: ${{ fromJSON(needs.devcontainer-cache-build.outputs.devcontainer-cache-image-all_configs).target.pre-commit.args.DEVCONTAINER_PRE_COMMIT_IMAGE }}
   release-it-workflow:
-    uses: rcwbr/release-it-gh-workflow/.github/workflows/release-it-workflow.yaml@0.2.2
+    uses: rcwbr/release-it-gh-workflow/.github/workflows/release-it-workflow.yaml@0.2.4
     with:
       app-id: 1050758 # devcntr-cache-build-ci-release-it release-it app
       app-environment: Repo release
@@ -50,3 +61,21 @@ jobs:
       release-it-config: "<(jq --slurp '.[0] * .[1]' /.release-it.json .release-it.json)"
     secrets:
       app-secret: ${{ secrets.RELEASE_IT_GITHUB_APP_KEY }} # Secret belonging to the Repo release environment
+  dive-efficiency:
+    name: Dive Docker image space efficiency analysis
+    needs: build-docker-image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.7
+      - name: Dive analyze
+        env:
+          DEVCONTAINER_CACHE_BUILD_IMAGE: ${{ fromJSON(needs.build-docker-image.outputs.docker-bake-metadata)['default']['image.name'] }}
+        run: |
+          docker run \
+            --rm \
+            -e CI=true \
+            -v $(pwd)/.dive-ci:/etc/.dive-ci \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            wagoodman/dive:v0.12.0 \
+            --ci-config /etc/.dive-ci $DEVCONTAINER_CACHE_BUILD_IMAGE

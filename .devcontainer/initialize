@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 export DEVCONTAINER_IMAGE=devcontainer-cache-build-devcontainer
 export DEVCONTAINER_REGISTRY=ghcr.io/rcwbr
 export DEVCONTAINER_DEFINITION_TYPE=bake
@@ -11,11 +13,11 @@ devcontainer_definition_files_arr=(
   pre-commit/devcontainer-bake.hcl
   cwd://.devcontainer/devcontainer-bake.hcl
 )
-DEVCONTAINER_DEFINITION_FILES="${devcontainer_definition_files_arr[@]}"
+DEVCONTAINER_DEFINITION_FILES="${devcontainer_definition_files_arr[*]}"
 export DEVCONTAINER_DEFINITION_FILES
-export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="remote_definition=https://github.com/rcwbr/dockerfile-partials.git#0.3.0"
+export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="remote_definition=https://github.com/rcwbr/dockerfile-partials.git#0.4.2"
 # If an argument is passed to this script, pass it to the build call
 if [[ -z $# ]]; then
-  export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$DEVCONTAINER_BUILD_ADDITIONAL_ARGS $@"
+  export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$DEVCONTAINER_BUILD_ADDITIONAL_ARGS $*"
 fi
 bash devcontainer-cache-build-initialize
