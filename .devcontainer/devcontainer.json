@@ -1,16 +1,14 @@
 {
+  "containerEnv": {
+    "DEVCONTAINER_HOST_WORKSPACE_MOUNT": "/var/lib/docker/codespacemount/workspace/devcontainer-cache-build"
+  },
   "name": "devcontainer-cache-build",
   "initializeCommand": ".devcontainer/initialize",
   "image": "devcontainer-cache-build-devcontainer",
   "mounts": [
     { "source": "/var/run/docker.sock", "target": "/var/run/docker.sock", "type": "bind" }
   ],
-  "secrets": {
-    "DEVCONTAINER_CACHE_BUILD_DEVCONTAINER_INITIALIZE": {
-      "description": "GitHub personal access token with `write:packages` scope to pull and push devcontainer image cache",
-      "documentationUrl": "https://github.com/rcwbr/devcontainer-cache-build/blob/main/README.md#initialize-script-github-container-registry-setup"
-    }
-  },
+  "onCreateCommand": "/opt/devcontainers/on_create_command",
   "hostRequirements": {
     "cpus": 2,
     "memory": "8gb",

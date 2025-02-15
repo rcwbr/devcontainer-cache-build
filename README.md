@@ -2,6 +2,8 @@
 
 Build devcontainer images using remote Docker cache. This repo contains definitions for a complete workflow around the devcontainer image, including configuration for local building and cache population by CI pipeline.
 
+<!-- mdformat-toc start --slug=github --maxlevel=6 --minlevel=1 -->
+
 ## Usage
 
 This repo defines tooling for the entire lifecycle of a devcontainer cache. Based on the context of the script call, `devcontainer-cache-build-initialize` supplies build configuration to target cache to refs for each event in that lifecycle, as described below:
