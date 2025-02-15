@@ -62,6 +62,8 @@ rulesets:
           required_status_checks:
             - context: devcontainer-cache-build / Populate devcontainer image cache
               integration_id: 15368 # GitHub Actions integration ID
+            - context: pre-commit / pre-commit
+              integration_id: 15368 # GitHub Actions integration ID
             - context: release-it-workflow / Release-it dry-run
               integration_id: 15368 # GitHub Actions integration ID
           # Requires PR branches to be up-to-date with target
