@@ -3,6 +3,11 @@ default_install_hook_types:
   - commit-msg
 
 repos:
+# Using local hook to pin hadolint image version until resolution of https://github.com/hadolint/hadolint/issues/921
+# - repo: https://github.com/hadolint/hadolint
+#   rev: v2.12.0
+#   hooks:
+#     - id: hadolint-docker
 - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
   rev: v9.20.0
   hooks:
@@ -22,6 +27,12 @@ repos:
     - mdformat-toc
 - repo: local
   hooks:
+  - id: hadolint-docker
+    name: Lint Dockerfiles
+    description: Runs hadolint Docker image to lint Dockerfiles
+    language: docker_image
+    types: ["dockerfile"]
+    entry: ghcr.io/hadolint/hadolint:2.12.0 hadolint
   - id: commitlint-ci
     name: commitlint-ci
     stages: [manual]
