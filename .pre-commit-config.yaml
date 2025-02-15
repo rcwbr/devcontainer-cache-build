@@ -8,6 +8,11 @@ repos:
 #   rev: v2.12.0
 #   hooks:
 #     - id: hadolint-docker
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 24.8.0
+  hooks:
+    - id: black
+      language_version: python3.12.4
 - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
   rev: v9.20.0
   hooks:
@@ -39,7 +44,6 @@ repos:
   - id: check-vcs-permalinks
   - id: check-yaml
   - id: detect-private-key
-  - id: double-quote-string-fixer
   - id: end-of-file-fixer
   - id: forbid-submodules
   - id: mixed-line-ending
