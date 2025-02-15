@@ -74,7 +74,7 @@ Docker container run, in which the configuration logic and build execution is ma
 #### Initialize script basic usage<a name="initialize-script-basic-usage"></a>
 
 To use the script, add
-`"initializeCommand": "curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.0/devcontainer-cache-build-initialize | bash"`
+`"initializeCommand": "curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.1/devcontainer-cache-build-initialize | bash"`
 to your `devcontainer.json`, or to scripts referenced by it. For example, you might replace
 
 ```jsonc
@@ -104,7 +104,7 @@ and `.devcontainer/initialize`:
 #!/bin/bash
 
 export DEVCONTAINER_IMAGE=my-project-devcontainer
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.0/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.1/devcontainer-cache-build-initialize | bash
 ```
 
 #### Initialize script specific version usage<a name="initialize-script-specific-version-usage"></a>
@@ -248,7 +248,7 @@ on: push
 jobs:
   devcontainer-cache-build:
     uses: >-
-      rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.7.0
+      rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.7.1
     permissions:
       packages: write
 ```
@@ -263,7 +263,7 @@ variable:
 # .devcontainer/initialize
 
 export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$@"
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.0/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.1/devcontainer-cache-build-initialize | bash
 ```
 
 #### GitHub Actions workflow inputs usage<a name="github-actions-workflow-inputs-usage"></a>
@@ -340,5 +340,5 @@ To build the devcontainer-cache-build tool image locally, use the following comm
 ```bash
 docker builder create --use --driver docker-container # Skip if you already have a docker-container builder activated
 export IMAGE_NAME=devcontainer-cache-build
-docker buildx bake -f github-cache-bake.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.7.0
+docker buildx bake -f github-cache-bake.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.7.1
 ```
