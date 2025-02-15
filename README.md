@@ -243,7 +243,7 @@ prepopulate cache. This may be achieved via the reusable workflow defined in
 on: push
 jobs:
   devcontainer-cache-build:
-    uses: 
+    uses: >-
       rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.6.0
     permissions:
       packages: write

@@ -1,16 +1,19 @@
 {
-  "version": "2.0.0",
+  "inputs": [
+    {
+      "description": "Docker image",
+      "id": "dockerImage",
+      "type": "promptString"
+    }
+  ],
   "tasks": [
     {
-      "label": "pre-commit all files",
-      "type": "shell",
       "command": "pre-commit run --all-files",
-      "problemMatcher": []
+      "label": "pre-commit all files",
+      "problemMatcher": [],
+      "type": "shell"
     },
     {
-      "label": "Docker dive",
-      "type": "shell",
-      "command": "docker",
       "args": [
         "run",
         "--rm",
@@ -20,14 +23,11 @@
         "wagoodman/dive:latest",
         "${input:dockerImage}"
       ],
-      "problemMatcher": []
+      "command": "docker",
+      "label": "Docker dive",
+      "problemMatcher": [],
+      "type": "shell"
     }
   ],
-  "inputs": [
-    {
-      "id": "dockerImage",
-      "description": "Docker image",
-      "type": "promptString"
-    }
-  ]
+  "version": "2.0.0"
 }

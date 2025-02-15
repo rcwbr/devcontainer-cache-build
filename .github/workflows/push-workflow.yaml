@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v4.1.7
       - name: Dive analyze
         env:
-          DEVCONTAINER_CACHE_BUILD_IMAGE: ${{ fromJSON(needs.build-docker-image.outputs.docker-bake-metadata)['default']['image.name'] }}  
+          DEVCONTAINER_CACHE_BUILD_IMAGE: ${{ fromJSON(needs.build-docker-image.outputs.docker-bake-metadata)['default']['image.name'] }}
         run: |
           docker run \
             --rm \
