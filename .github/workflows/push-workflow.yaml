@@ -1,5 +1,10 @@
 name: Push workflow
-on: push
+on:
+  push:
+    branches:
+      - main
+    tags:
+  pull_request:
 jobs:
   build-docker-image:
     # Build the devcontainer-cache-build-initialize image
@@ -39,6 +44,12 @@ jobs:
       devcontainer-cache-build-image-override: ${{ fromJSON(needs.build-docker-image.outputs.docker-bake-metadata)['default']['image.name'] }}
     permissions:
       packages: write
+  pre-commit:
+    if: github.event_name == 'pull_request'
+    uses: rcwbr/dockerfile-partials/.github/workflows/pre-commit.yaml@0.4.0
+    needs: devcontainer-cache-build
+    with:
+      pre-commit-image: ${{ fromJSON(needs.devcontainer-cache-build.outputs.devcontainer-cache-image-all_configs).target.pre-commit.args.DEVCONTAINER_PRE_COMMIT_IMAGE }}
   release-it-workflow:
     uses: rcwbr/release-it-gh-workflow/.github/workflows/release-it-workflow.yaml@0.2.2
     with:
