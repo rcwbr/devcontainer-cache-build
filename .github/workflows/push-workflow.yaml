@@ -61,3 +61,19 @@ jobs:
       release-it-config: "<(jq --slurp '.[0] * .[1]' /.release-it.json .release-it.json)"
     secrets:
       app-secret: ${{ secrets.RELEASE_IT_GITHUB_APP_KEY }} # Secret belonging to the Repo release environment
+  dive-efficiency:
+    name: Dive Docker image space efficiency analysis
+    needs: build-docker-image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dive analyze
+        env:
+          DEVCONTAINER_CACHE_BUILD_IMAGE: ${{ fromJSON(needs.build-docker-image.outputs.docker-bake-metadata)['default']['image.name'] }}  
+        run: |
+          docker run \
+            --rm \
+            -e CI=true \
+            -v $(pwd)/.dive-ci:/etc/.dive-ci \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            wagoodman/dive:v0.12.0 \
+            --ci-config /etc/.dive-ci $DEVCONTAINER_CACHE_BUILD_IMAGE
