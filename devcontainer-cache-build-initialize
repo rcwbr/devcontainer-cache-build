@@ -14,10 +14,10 @@ if [[ -z ${DEVCONTAINER_INITIALIZE_PID+x} ]]; then
 else
   set +e
   # Get the PID of the process that called initialize
-  INITIALIZE_CALLER_PID="$(ps -o ppid= ${DEVCONTAINER_INITIALIZE_PID})"
+  INITIALIZE_CALLER_PID="$(ps -o ppid= "$DEVCONTAINER_INITIALIZE_PID")"
   # Strip whitespace from the PID value
   INITIALIZE_CALLER_PID=${INITIALIZE_CALLER_PID// /}
-  cat /proc/${INITIALIZE_CALLER_PID}/cmdline | grep -q "expect-existing-container"
+  grep -q "expect-existing-container" "/proc/${INITIALIZE_CALLER_PID}/cmdline"
   EXPECT_EXISTING_CONTAINER=$?
   set -e
   if [[ $EXPECT_EXISTING_CONTAINER == 0 ]]; then
@@ -33,9 +33,9 @@ echo "Executing devcontainer-cache-build containerized image build"
 docker run \
   --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v $(pwd):$(pwd):ro \
+  -v "$(pwd):$(pwd):ro" \
   -v "$GITHUB_OUTPUT":"$GITHUB_OUTPUT" \
-  -w $(pwd) \
+  -w "$(pwd)" \
   -e CI \
   -e DEVCONTAINER_IMAGE \
   -e DEVCONTAINER_BUILD_ADDITIONAL_ARGS \
