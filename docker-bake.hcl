@@ -1,5 +1,5 @@
 target "docker-client" {
-  context = "https://github.com/rcwbr/dockerfile_partials.git#0.2.1"
+  context    = "https://github.com/rcwbr/dockerfile_partials.git#0.2.1"
   dockerfile = "docker-client/Dockerfile"
   contexts = {
     base_context = "docker-image://python:3.13.0"
