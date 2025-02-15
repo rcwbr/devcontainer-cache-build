@@ -307,11 +307,19 @@ this repository, via [commitlint](https://github.com/conventional-changelog/comm
 
 ### CI/CD<a name="cicd"></a>
 
-This repo uses the [release-it-gh-workflow](https://github.com/rcwbr/release-it-gh-workflow), with
-the conventional-changelog image defined at any given ref, as its automation.
+This repo uses the [release-it-gh-workflow](https://github.com/rcwbr/release-it-gh-workflow) with
+the file-bumper image as its release automation.
+
+A [Docker Bake](https://github.com/docker/bake-action) workflow packages and releases the
+devcontainer-cache-build image.
 
 It uses its own [reusable devcontainer cache build workflow](#github-actions-workflow) to
 pre-populate the devcontainer cache.
+
+Linting is enforced via a
+[pre-commit workflow](https://github.com/rcwbr/dockerfile-partials/blob/main/.github/workflows/pre-commit.yaml),
+and a [Dive Docker image efficiency analysis](https://github.com/wagoodman/dive) job analyses the
+storage efficiency of the devcontainer-cache-build image.
 
 ### Settings<a name="settings"></a>
 
