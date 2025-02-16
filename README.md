@@ -19,6 +19,8 @@ population by CI pipeline.
     - [GHCR registry setup](#ghcr-registry-setup)
     - [GitHub Actions workflow](#github-actions-workflow)
       - [GitHub Actions workflow inputs usage](#github-actions-workflow-inputs-usage)
+  - [Codespaces prebuilds](#codespaces-prebuilds)
+    - [Codespace prebuilds configuration](#codespace-prebuilds-configuration)
   - [Contributing](#contributing)
     - [devcontainer](#devcontainer)
       - [devcontainer basic usage](#devcontainer-basic-usage)
@@ -275,6 +277,43 @@ curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.7.1/devc
 | `build-context-gid`                       | ✗        | `1000`        | number | The USER_GID to set for the .devcontainer/initialize call                                                                               |
 | `devcontainer-cache-build-image-override` | ✗        | `""`          | string | The image name to use to override the default devcontainer-cache-build image                                                            |
 | `initialize-args`                         | ✗        | `""`          | string | Args to provide to the `devcontainer-cache-build-initialize` script; by default set to values for building Codespaces-compatible images |
+
+## Codespaces prebuilds<a name="codespaces-prebuilds"></a>
+
+[Codespace prebuilds](https://docs.github.com/en/codespaces/prebuilding-your-codespaces/about-github-codespaces-prebuilds)
+may be configured to enhance cached bringup in Codespaces by effectively snapshotting a devcontainer
+_after_ pull and execution of the `devcontainer-cache-build` Docker image as configured by the
+`.devcontainer/initialize` script.
+
+### Codespace prebuilds configuration<a name="codespace-prebuilds-configuration"></a>
+
+Per the below setup steps, GitHub will be configured to prebuild the Codespace on pushes to the
+default branch. This way, Codespace bringups will only need to execute when starting a _new_
+Codespace from branch that contains a delta relative to the default branch.
+
+1. If using GHCR as the devcontainer image registry, retrieve (or replace, including in the
+   `[prefix for your repo]_CONTAINER_REGISTRY_PASSWORD` user Codespace secret) the Personal Access
+   Token created in the
+   [Initialize script GitHub container registry setup step](#initialize-script-github-container-registry-setup).
+   1. Alternatively, create a new token. The same scopes are required, and the role is similar,
+      albeit in a conceptually shared context.
+1. In repository settings,
+   [add a Codespace secret](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/managing-development-environment-secrets-for-your-repository-or-organization#adding-secrets-for-a-repository)
+   named `CODESPACES_PREBUILD_TOKEN` (see
+   [docs](https://docs.github.com/en/codespaces/prebuilding-your-codespaces/allowing-a-prebuild-to-access-other-repositories#allowing-a-prebuild-write-access-to-external-resources))
+   with the token as the value.
+1. Add two more repo Codespace secrets (as no mechanism for simple variables exists) for
+   [user configuration](https://github.com/rcwbr/dockerfile-partials#useradd-codespaces-usage):
+   1. Set `USER` to `codespace`
+   1. Set `UID` to `1000`
+1. In repo settings,
+   [configure a Codespaces prebuild](https://docs.github.com/en/codespaces/prebuilding-your-codespaces/configuring-prebuilds)
+   1. Select Set up prebuild
+   1. Select the default branch
+   1. Set Prebuild triggers to Every push
+   1. Select appropriate region availability to your case
+   1. Set Template history to 1
+   1. Optionally, specify recipients for Failure notifications
 
 ## Contributing<a name="contributing"></a>
 
