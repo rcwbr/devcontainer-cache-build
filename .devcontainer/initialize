@@ -9,13 +9,15 @@ export DEVCONTAINER_INITIALIZE_PID=$PPID
 devcontainer_definition_files_arr=(
   devcontainer-bake.hcl
   docker-client/devcontainer-bake.hcl
+  zsh/devcontainer-bake.hcl
+  tmux/devcontainer-bake.hcl
   useradd/devcontainer-bake.hcl
   pre-commit/devcontainer-bake.hcl
   cwd://.devcontainer/devcontainer-bake.hcl
 )
 DEVCONTAINER_DEFINITION_FILES="${devcontainer_definition_files_arr[*]}"
 export DEVCONTAINER_DEFINITION_FILES
-export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="remote_definition=https://github.com/rcwbr/dockerfile-partials.git#0.4.2"
+export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="remote_definition=https://github.com/rcwbr/dockerfile-partials.git#0.10.0"
 # If an argument is passed to this script, pass it to the build call
 if [[ -z $# ]]; then
   export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$DEVCONTAINER_BUILD_ADDITIONAL_ARGS $*"
