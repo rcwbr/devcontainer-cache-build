@@ -2,6 +2,18 @@
   "containerEnv": {
     "DEVCONTAINER_HOST_WORKSPACE_MOUNT": "/var/lib/docker/codespacemount/workspace/devcontainer-cache-build"
   },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "hashicorp.hcl",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "bierner.markdown-mermaid",
+        "joshbolduc.commitlint",
+        "ms-python.black-formatter"
+      ]
+    }
+  },
   "hostRequirements": {
     "cpus": 2,
     "memory": "8gb",
