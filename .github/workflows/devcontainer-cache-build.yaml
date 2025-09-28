@@ -44,7 +44,10 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v5.0.0
+        with:
+          # Use the PR branch (if applicable) instead of its merge branch
+          ref: ${{ github.head_ref || github.ref }}
       - name: GHCR Login
         uses: docker/login-action@v3.3.0
         with:
