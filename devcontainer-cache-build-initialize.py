@@ -228,7 +228,6 @@ if DOCKER_CONFIG_JSON is not None:
 
         with open(docker_config_filename, "w") as docker_config_file:
             print(f"Writing Docker config JSON to file {docker_config_filename}")
-            print(json.dumps(docker_config_content, indent=4))
             json.dump(docker_config_content, docker_config_file, indent=4)
 
     except ValueError:
