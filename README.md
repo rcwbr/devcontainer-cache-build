@@ -76,7 +76,7 @@ Docker container run, in which the configuration logic and build execution is ma
 #### Initialize script basic usage<a name="initialize-script-basic-usage"></a>
 
 To use the script, add
-`"initializeCommand": "curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.8.0/devcontainer-cache-build-initialize | bash"`
+`"initializeCommand": "curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.8.1/devcontainer-cache-build-initialize | bash"`
 to your `devcontainer.json`, or to scripts referenced by it. For example, you might replace
 
 ```jsonc
@@ -106,7 +106,7 @@ and `.devcontainer/initialize`:
 #!/bin/bash
 
 export DEVCONTAINER_IMAGE=my-project-devcontainer
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.8.0/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.8.1/devcontainer-cache-build-initialize | bash
 ```
 
 #### Initialize script specific version usage<a name="initialize-script-specific-version-usage"></a>
@@ -168,7 +168,7 @@ configuration.
 | `DEVCONTAINER_DEFAULT_BRANCH_NAME`    | ✗        | `main`                                                                                                                                                                                                                                                                        | The branch name from which to always pull cache                                                                                                                                                                                                                                                                                                                                                                                              |
 | `DEVCONTAINER_DEFINITION_TYPE`        | ✗        | `build`                                                                                                                                                                                                                                                                       | The image definition type, [basic Docker build (`build`)](https://docs.docker.com/reference/cli/docker/buildx/build/) or [Bake (`bake`)](https://docs.docker.com/reference/cli/docker/buildx/bake/)                                                                                                                                                                                                                                          |
 | `DEVCONTAINER_DEFINITION_FILES`       | ✗        | `.devcontainer/Dockerfile`, or `.devcontainer/bake.hcl` if `DEVCONTAINER_DEFINITION_TYPE` is `bake`                                                                                                                                                                           | The Dockerfile or bake config file path(s) for the image build, space separated                                                                                                                                                                                                                                                                                                                                                              |
-| `DEVCONTAINER_INITIALIZE_PID`         | ✗        | N/A                                                                                                                                                                                                                                                                           | If defined, must be set to the process ID of the command provided to the `devcontainer.json` `initializeCommand` (often `$PPID`). Used to determine whether the context of the `initializeCommand` call is a new container bringup, based on the presence of the the [`--expect-existing-container`](https://github.com/devcontainers/cli/blob/9ba1fdaa11dee0.8.042d33e4ac13c5788392e34/src/spec-node/devContainersSpecCLI.ts#L196) argument |
+| `DEVCONTAINER_INITIALIZE_PID`         | ✗        | N/A                                                                                                                                                                                                                                                                           | If defined, must be set to the process ID of the command provided to the `devcontainer.json` `initializeCommand` (often `$PPID`). Used to determine whether the context of the `initializeCommand` call is a new container bringup, based on the presence of the the [`--expect-existing-container`](https://github.com/devcontainers/cli/blob/9ba1fdaa11dee0.8.142d33e4ac13c5788392e34/src/spec-node/devContainersSpecCLI.ts#L196) argument |
 | `DEVCONTAINER_OUTPUTS`                | ✗        | `type=image,name=[DEVCONTAINER_REGISTRY],push=[DEVCONTAINER_PUSH_IMAGE]`                                                                                                                                                                                                      | Each [`output` arg](https://docs.docker.com/reference/cli/docker/buildx/build/#output) to apply to the image build, space separated                                                                                                                                                                                                                                                                                                          |
 | `DEVCONTAINER_PREBUILD_SCRIPT`        | ✗        | None                                                                                                                                                                                                                                                                          | The path to a script to execute in advance of image build operations, e.g. for `docker login`s (see [Initialize script prebuild file usage](#initialize-script-prebuild-file-usage)). Relative to the repo root; must resolve to a file within the repo directory                                                                                                                                                                            |
 | `DEVCONTAINER_PUSH_IMAGE`             | ✗        | `false`                                                                                                                                                                                                                                                                       | Whether to push the image to the provided registry (requires `DEVCONTAINER_REGISTRY`)                                                                                                                                                                                                                                                                                                                                                        |
@@ -250,7 +250,7 @@ on: push
 jobs:
   devcontainer-cache-build:
     uses: >-
-      rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.8.0
+      rcwbr/devcontainer-cache-build/.github/workflows/devcontainer-cache-build.yaml@0.8.1
     permissions:
       packages: write
 ```
@@ -265,7 +265,7 @@ variable:
 # .devcontainer/initialize
 
 export DEVCONTAINER_BUILD_ADDITIONAL_ARGS="$@"
-curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.8.0/devcontainer-cache-build-initialize | bash
+curl https://raw.githubusercontent.com/rcwbr/devcontainer-cache-build/0.8.1/devcontainer-cache-build-initialize | bash
 ```
 
 #### GitHub Actions workflow inputs usage<a name="github-actions-workflow-inputs-usage"></a>
@@ -379,5 +379,5 @@ To build the devcontainer-cache-build tool image locally, use the following comm
 ```bash
 docker builder create --use --driver docker-container # Skip if you already have a docker-container builder activated
 export IMAGE_NAME=devcontainer-cache-build
-docker buildx bake -f github-cache-bake.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.8.0
+docker buildx bake -f github-cache-bake.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.8.1
 ```
