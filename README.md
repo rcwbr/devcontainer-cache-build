@@ -23,7 +23,6 @@ population by CI pipeline.
     - [Codespace prebuilds configuration](#codespace-prebuilds-configuration)
   - [Contributing](#contributing)
     - [devcontainer](#devcontainer)
-      - [devcontainer basic usage](#devcontainer-basic-usage)
       - [devcontainer Codespaces usage](#devcontainer-codespaces-usage)
       - [devcontainer pre-commit usage](#devcontainer-pre-commit-usage)
     - [CI/CD](#cicd)
@@ -323,16 +322,11 @@ This repo contains a [devcontainer definition](https://containers.dev/) in the `
 folder. It leverages its own devcontainer cache build tool and layers
 [defined in the dockerfile-partials repo](https://github.com/rcwbr/dockerfile-partials).
 
-#### devcontainer basic usage<a name="devcontainer-basic-usage"></a>
-
-The devcontainer cache build tool requires authentication to the GitHub package registry, as a token
-stored as `DOCKERFILE_PARTIALS_DEVCONTAINER_INITIALIZE` (see
-[instructions](#initialize-script-github-container-registry-setup)).
-
 #### devcontainer Codespaces usage<a name="devcontainer-codespaces-usage"></a>
 
-For use with Codespaces, the `DOCKERFILE_PARTIALS_DEVCONTAINER_INITIALIZE` token (see
-[devcontainer basic usage](#devcontainer-basic-usage)) must be stored as a Codespaces secret (see
+For use with Codespaces, the `DEVCONTAINER_CACHE_BUILD_CONTAINER_REGISTRY_SERVER`,
+`DEVCONTAINER_CACHE_BUILD_CONTAINER_REGISTRY_USER`, and
+`DEVCONTAINER_CACHE_BUILD_CONTAINER_REGISTRY_PASSWORD` variables stored as Codespaces secrets (see
 [instructions](#initialize-script-github-container-registry-setup)), as must values for `USER`, and
 `UID` (see
 [useradd Codespaces usage](https://github.com/rcwbr/dockerfile-partials#useradd-codespaces-usage)).
