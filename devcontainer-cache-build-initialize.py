@@ -140,6 +140,7 @@ DEVCONTAINER_OUTPUTS = docker_destination_list_from_env_var(
             {
                 "type": "image",
                 "name": f"{DEVCONTAINER_IMAGE_REF}:{GIT_BRANCH_SANITIZED}",
+                "rewrite-timestamp": True,
                 "push": DEVCONTAINER_PUSH_IMAGE,
             }
         ]
