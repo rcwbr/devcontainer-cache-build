@@ -42,6 +42,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       packages: write
+    env:
+      SOURCE_DATE_EPOCH: 1731797200
     steps:
       - name: Checkout
         uses: actions/checkout@v5.0.0
@@ -54,6 +56,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rewrite timestamps
+        run: find . | xargs touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
       - name: Build devcontainer cache
         id: build-devcontainer-cache
         env:
