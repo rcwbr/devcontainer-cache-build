@@ -54,6 +54,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rewrite timestamps
+        run: find . | xargs touch --date="@${SOURCE_DATE_EPOCH}" --no-dereference
       - name: Build devcontainer cache
         id: build-devcontainer-cache
         env:
