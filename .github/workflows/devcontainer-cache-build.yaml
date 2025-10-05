@@ -36,14 +36,14 @@ on:
       devcontainer-cache-image-all_configs:
         description: "The Bake configs of all layers of the devcontainer image built by the workflow"
         value: ${{ jobs.devcontainer-cache-build.outputs.devcontainer-cache-image-all_configs }}
-env:
-  SOURCE_DATE_EPOCH: 1731797200
 jobs:
   devcontainer-cache-build:
     name: Populate devcontainer image cache
     runs-on: ubuntu-24.04
     permissions:
       packages: write
+    env:
+      SOURCE_DATE_EPOCH: 1731797200
     steps:
       - name: Checkout
         uses: actions/checkout@v5.0.0
