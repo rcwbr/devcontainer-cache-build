@@ -29,5 +29,6 @@
     }
   ],
   "name": "devcontainer-cache-build",
-  "onCreateCommand": "/opt/devcontainers/on_create_command"
+  "onCreateCommand": "/opt/devcontainers/on_create_command",
+  "postStartCommand": "/opt/devcontainers/post_start_command"
 }
