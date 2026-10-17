@@ -1,4 +1,9 @@
+// Expected to be used with the shared vars.hcl that declares the
+// `platforms` variable. For example:
+//   docker buildx bake -f vars.hcl -f docker-bake.hcl -f github-cache-bake.hcl ...
+
 target "docker-client" {
+  platforms = platforms
   context    = "https://github.com/rcwbr/dockerfile_partials.git#0.2.1"
   dockerfile = "docker-client/Dockerfile"
   contexts = {
@@ -8,6 +13,7 @@ target "docker-client" {
 }
 
 target "default" {
+  platforms = platforms
   contexts = {
     base_context = "target:docker-client"
   }

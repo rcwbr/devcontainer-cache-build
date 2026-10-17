@@ -33,7 +33,7 @@ jobs:
         uses: docker/bake-action@v6.3.0
         with:
           source: https://github.com/rcwbr/dockerfile-partials.git#0.17.0
-          files: github-cache-bake.hcl, cwd://docker-bake.hcl
+          files: github-cache-bake.hcl, cwd://vars.hcl, cwd://docker-bake.hcl
         env:
           REGISTRY: ghcr.io/rcwbr/
           IMAGE_NAME: devcontainer-cache-build

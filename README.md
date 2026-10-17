@@ -136,6 +136,9 @@ variable "DEVCONTAINER_CACHE_FROMS" {
 variable "DEVCONTAINER_CACHE_TOS" {
   default = ""
 }
+variable "platforms" {
+  default = ["linux/amd64", "linux/arm64"]
+}
 
 target "default" {
   dockerfile = ".devcontainer/Dockerfile"
@@ -373,5 +376,5 @@ To build the devcontainer-cache-build tool image locally, use the following comm
 ```bash
 docker builder create --use --driver docker-container # Skip if you already have a docker-container builder activated
 export IMAGE_NAME=devcontainer-cache-build
-docker buildx bake -f github-cache-bake.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.10.0
+docker buildx bake -f github-cache-bake.hcl -f cwd://vars.hcl -f cwd://docker-bake.hcl https://github.com/rcwbr/dockerfile-partials.git#0.17.0
 ```

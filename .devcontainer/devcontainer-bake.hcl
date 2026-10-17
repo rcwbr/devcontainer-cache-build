@@ -15,6 +15,7 @@ variable "devcontainer_layers" {
 }
 
 target "docker-client" {
+  platforms = platforms
   contexts = {
     base_context = "docker-image://python:3.12.4"
   }
