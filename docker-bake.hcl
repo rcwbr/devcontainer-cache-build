@@ -1,4 +1,10 @@
+variable "platforms" {
+  type    = list(string)
+  default = ["linux/amd64", "linux/arm64"]
+}
+
 target "docker-client" {
+  platforms  = platforms
   context    = "https://github.com/rcwbr/dockerfile_partials.git#0.2.1"
   dockerfile = "docker-client/Dockerfile"
   contexts = {
@@ -8,6 +14,7 @@ target "docker-client" {
 }
 
 target "default" {
+  platforms = platforms
   contexts = {
     base_context = "target:docker-client"
   }
